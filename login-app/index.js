@@ -25,8 +25,15 @@ function logAttempt(username, success) {
   fs.appendFileSync('login.log', `${message}\n`);
 
   // Send log to Better Stack using Logtail
-  logtail.info(message).catch((error) => {
-    console.error('Error sending log to Better Stack:', error);
+  if (success) {
+    logtail.info('Successful login attempt', { username: username });
+  } else {
+    logtail.error('Failed login attempt', { username: username });
+  }
+
+  // Ensure all logs are sent to Logtail
+  logtail.flush().catch((error) => {
+    console.error('Error flushing logs to Better Stack:', error);
   });
 }
 
@@ -45,6 +52,10 @@ app.post('/login', (req, res) => {
 
 // Logout endpoint
 app.post('/logout', (req, res) => {
+  logtail.info('User logged out');
+  logtail.flush().catch((error) => {
+    console.error('Error flushing logs to Better Stack:', error);
+  });
   res.send('You have been logged out');
 });
 
