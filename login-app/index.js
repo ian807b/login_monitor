@@ -1,8 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+const { Logtail } = require('@logtail/node'); // Import Logtail
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+const logtail = new Logtail('d2vYYBFukv6rYV1sKeufn87f'); // Initialize Logtail with your source token
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -21,13 +24,9 @@ function logAttempt(username, success) {
   // Append to a local log file
   fs.appendFileSync('login.log', `${message}\n`);
 
-  // Send log to Better Stack
-  fetch('https://push.betterstack.com?token=YOUR_BETTER_STACK_TOKEN', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message }),
+  // Send log to Better Stack using Logtail
+  logtail.info(message).catch((error) => {
+    console.error('Error sending log to Better Stack:', error);
   });
 }
 
